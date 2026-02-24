@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { documentTypes } from '../data/docsData';
 import { useNavigate } from 'react-router-dom';
-import { Search, LayoutGrid, ChevronRight } from 'lucide-react';
+import { Search, LayoutGrid, ChevronRight, } from 'lucide-react';
 
 const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -10,7 +10,6 @@ const Templates: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('Баары');
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Категориялардын тизмесин алуу
   const categories = ['Баары', ...Array.from(new Set(documentTypes.map(d => d.category)))];
 
   useEffect(() => {
@@ -19,7 +18,6 @@ const Templates: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Издөө жана чыпкалоо логикасы
   const filteredTemplates = documentTypes.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === 'Баары' || doc.category === activeCategory;
@@ -30,25 +28,41 @@ const Templates: React.FC = () => {
 
   return (
     <div style={pageStyles.container}>
-      <Sidebar />
+      <div className="no-print">
+        <Sidebar />
+      </div>
+      
       <div style={{
         ...pageStyles.content,
         marginLeft: isMobile ? '0' : '260px',
-        padding: isMobile ? '20px' : '40px'
+        padding: isMobile ? '16px' : '40px',
+        paddingTop: isMobile ? '80px' : '40px' // Мобилдик шапка үчүн боштук
       }}>
         
-        {/* Header */}
-        <div style={pageStyles.header}>
-          <div>
-            <h2 style={pageStyles.title}>📜 Бардык шаблондор</h2>
-            <p style={pageStyles.subtitle}>Керектүү документтин түрүн тандап, толтуруп баштаңыз.</p>
+        {/* Header Section */}
+        <div style={{
+          ...pageStyles.header,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
+        }}>
+          <div style={{ width: '100%' }}>
+            <h2 style={{
+              ...pageStyles.title,
+              fontSize: isMobile ? '24px' : '28px'
+            }}>📜 Шаблондор</h2>
+            <p style={pageStyles.subtitle}>Керектүү документти тандаңыз</p>
           </div>
           
-          <div style={pageStyles.searchBox}>
+          {/* Search Box - Мобилдикте толук туурасы */}
+          <div style={{
+            ...pageStyles.searchBox,
+            maxWidth: isMobile ? '100%' : '300px',
+            marginTop: isMobile ? '10px' : '0'
+          }}>
             <Search size={18} color="#94a3b8" />
             <input 
               type="text" 
-              placeholder="Шаблон издөө..." 
+              placeholder="Издөө..." 
               style={pageStyles.searchInput}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -56,62 +70,82 @@ const Templates: React.FC = () => {
           </div>
         </div>
 
-        {/* Categories Bar */}
-        <div style={pageStyles.categoryBar}>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              style={{
-                ...pageStyles.categoryBtn,
-                background: activeCategory === cat ? '#3b82f6' : '#fff',
-                color: activeCategory === cat ? '#fff' : '#64748b',
-                border: activeCategory === cat ? '1px solid #3b82f6' : '1px solid #e2e8f0',
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Categories Bar - Скролл боло тургандай жасалды */}
+        <div style={pageStyles.categoryWrapper}>
+          <div style={pageStyles.categoryBar}>
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                style={{
+                  ...pageStyles.categoryBtn,
+                  background: activeCategory === cat ? '#3b82f6' : '#fff',
+                  color: activeCategory === cat ? '#fff' : '#64748b',
+                  boxShadow: activeCategory === cat ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none',
+                  border: activeCategory === cat ? '1px solid #3b82f6' : '1px solid #e2e8f0',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Grid Section */}
         {filteredTemplates.length > 0 ? (
           <div style={{
             ...pageStyles.grid,
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))'
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: isMobile ? '12px' : '20px'
           }}>
             {filteredTemplates.map((doc) => (
               <div 
                 key={doc.id} 
-                style={pageStyles.card} 
+                style={{
+                  ...pageStyles.card,
+                  padding: isMobile ? '16px' : '24px'
+                }} 
                 onClick={() => navigate(`/create/${doc.id}`)}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-5px)';
-                    e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.05)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                }}
               >
-                <div style={{...pageStyles.cardIcon, background: doc.color + '15', color: doc.color}}>
+                <div style={{
+                  ...pageStyles.cardIcon, 
+                  width: isMobile ? '46px' : '54px',
+                  height: isMobile ? '46px' : '54px',
+                  background: doc.color + '15', 
+                  color: doc.color,
+                  fontSize: isMobile ? '20px' : '24px'
+                }}>
                   {doc.icon}
                 </div>
                 <div style={pageStyles.cardInfo}>
-                  <h4 style={pageStyles.docTitle}>{doc.title}</h4>
+                  <h4 style={{
+                    ...pageStyles.docTitle,
+                    fontSize: isMobile ? '15px' : '16px'
+                  }}>{doc.title}</h4>
                   <p style={pageStyles.docCategory}>{doc.category}</p>
                 </div>
-                <ChevronRight size={20} color="#cbd5e1" />
+                <ChevronRight size={18} color="#cbd5e1" />
               </div>
             ))}
           </div>
         ) : (
           <div style={pageStyles.emptyState}>
-            <LayoutGrid size={48} color="#cbd5e1" />
-            <p>Мындай шаблон табылган жок.</p>
+            <LayoutGrid size={48} color="#cbd5e1" strokeWidth={1.5} />
+            <p style={{marginTop: '15px'}}>Тилекке каршы, эч нерсе табылган жок.</p>
           </div>
         )}
       </div>
+
+      <style>{`
+        /* Скроллду жашыруу бирок иштетүү */
+        div::-webkit-scrollbar {
+          display: none;
+        }
+        div {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
@@ -119,23 +153,46 @@ const Templates: React.FC = () => {
 const pageStyles: { [key: string]: React.CSSProperties } = {
   container: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
   content: { flex: 1, transition: 'all 0.3s ease' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '30px' },
-  title: { fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: 0 },
-  subtitle: { color: '#64748b', marginTop: '5px', fontSize: '14px' },
-  searchBox: { display: 'flex', alignItems: 'center', background: '#fff', padding: '10px 15px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', maxWidth: '300px' },
-  searchInput: { border: 'none', outline: 'none', marginLeft: '10px', fontSize: '14px', width: '100%' },
-  categoryBar: { display: 'flex', gap: '10px', marginBottom: '30px', overflowX: 'auto', paddingBottom: '5px' },
-  categoryBtn: { padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: '0.2s', whiteSpace: 'nowrap' },
-  grid: { display: 'grid', gap: '20px' },
-  card: { 
-    background: '#fff', padding: '24px', borderRadius: '20px', border: '1px solid #e2e8f0', 
-    display: 'flex', alignItems: 'center', gap: '18px', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
+  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '25px', gap: '15px' },
+  title: { fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' },
+  subtitle: { color: '#64748b', marginTop: '4px', fontSize: '14px' },
+  searchBox: { 
+    display: 'flex', alignItems: 'center', background: '#fff', 
+    padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0', 
+    width: '100%', transition: 'all 0.2s' 
   },
-  cardIcon: { width: '54px', height: '54px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
-  cardInfo: { flex: 1 },
-  docTitle: { margin: 0, color: '#1e293b', fontSize: '16px', fontWeight: '700' },
-  docCategory: { margin: '4px 0 0', fontSize: '12px', color: '#94a3b8', fontWeight: '500' },
-  emptyState: { textAlign: 'center', padding: '60px', color: '#94a3b8' }
+  searchInput: { border: 'none', outline: 'none', marginLeft: '10px', fontSize: '15px', width: '100%', background: 'transparent' },
+  
+  categoryWrapper: {
+    margin: '0 -16px 25px -16px', // Мобилдикте экрандын четтерине тийүү үчүн
+    padding: '0 16px',
+    overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch'
+  },
+  categoryBar: { 
+    display: 'flex', 
+    gap: '10px', 
+    paddingBottom: '5px',
+    width: 'max-content' // Баскычтар кысылбашы үчүн
+  },
+  categoryBtn: { 
+    padding: '10px 18px', borderRadius: '12px', fontSize: '14px', 
+    fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', 
+    whiteSpace: 'nowrap' 
+  },
+  
+  grid: { display: 'grid' },
+  card: { 
+    background: '#fff', borderRadius: '18px', border: '1px solid #e2e8f0', 
+    display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', 
+    transition: 'all 0.2s ease-in-out',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+  },
+  cardIcon: { borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  cardInfo: { flex: 1, minWidth: 0 }, // minWidth текст ашып кетпеши үчүн керек
+  docTitle: { margin: 0, color: '#1e293b', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  docCategory: { margin: '2px 0 0', fontSize: '12px', color: '#94a3b8', fontWeight: '500' },
+  emptyState: { textAlign: 'center', padding: '80px 20px', color: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center' }
 };
 
 export default Templates;
